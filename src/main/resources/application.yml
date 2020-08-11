@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active: dev
+    devtools:
+      restart:
+        enabled: false
+server:
+  port: 8083
+  servlet:
+    context-path: /
+
+
+zookeeper:
+  address: 188.131.218.191:2181
+  timeout: 200000
