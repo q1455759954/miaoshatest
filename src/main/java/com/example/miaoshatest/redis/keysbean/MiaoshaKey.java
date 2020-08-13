@@ -1,6 +1,7 @@
 package com.example.miaoshatest.redis.keysbean;
 
 
+import com.example.miaoshatest.common.CustomerConstant;
 import com.example.miaoshatest.redis.BasePrefix;
 
 public class MiaoshaKey extends BasePrefix {
@@ -13,4 +14,11 @@ public class MiaoshaKey extends BasePrefix {
 	public static MiaoshaKey getMiaoshaVerifyCode = new MiaoshaKey(300, "vc");
 	public static MiaoshaKey getMiaoshaVerifyCodeRegister = new MiaoshaKey(300, "register");
 
+	public static String getMiaoshaOrderRedisKey(String accountId, String productId) {
+		return CustomerConstant.RedisKeyPrefix.MIAOSHA_ORDER + "_" + accountId + "_" + productId;
+	}
+
+	public static String getMiaoshaOrderWaitFlagRedisKey(String accountId, String productId) {
+		return CustomerConstant.RedisKeyPrefix.MIAOSHA_ORDER_WAIT + "_" + accountId + "_" + productId;
+	}
 }

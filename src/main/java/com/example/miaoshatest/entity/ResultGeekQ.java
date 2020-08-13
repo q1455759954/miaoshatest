@@ -19,6 +19,7 @@ public class ResultGeekQ<T> extends AbstractResult implements Serializable {
         return new ResultGeekQ(ResultStatus.SUCCESS, null);
     }
 
+
     public T getData() {
         return data;
     }

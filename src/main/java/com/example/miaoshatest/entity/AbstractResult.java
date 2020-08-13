@@ -29,6 +29,10 @@ public  class AbstractResult {
         return this;
     }
 
+    public static <T> ResultGeekQ<T> error(ResultStatus status) {
+        return new ResultGeekQ<T>(status);
+    }
+
     public AbstractResult withError(int code, String message) {
         this.code = code;
         this.message = message;

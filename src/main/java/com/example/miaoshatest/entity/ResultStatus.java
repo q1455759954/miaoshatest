@@ -6,6 +6,14 @@ public enum ResultStatus {
     FAILD(-1, "失败"),
     MIAOSHA_FAIL(40003,"秒杀失败"),
     SYSTEM_ERROR(10001, "系统错误"),
+    YURE_FAILD(20006, "商品预热失败！"),
+    DATA_NOT_EXISTS(20005, "商品不存在!"),
+    ACCESS_LIMIT_REACHED (30004,"访问太频繁!"),
+    MIAO_SHA_NOT_START (30005,"秒杀未开始!"),
+    REQUEST_ILLEGAL (30004,"请求非法!"),
+    MIAO_SHA_OVER(40001,"商品已经秒杀完毕"),
+    MIAOSHA_QUEUE_ING (40011,"排队中请耐心等待!"),
+
 
     /**
      * 注册登录
@@ -15,9 +23,8 @@ public enum ResultStatus {
     CODE_FAIL(200002,"验证码不一致!"),
     PASSWORD_ERROR(20003,"密码错误!"),
     MOBILE_NOT_EXIST(20004,"用户不存在!"),
-    DATA_NOT_EXISTS(20005, "商品不存在!"),
-    USER_NOT_EXIST(20008,"用户不存在"),
-    YURE_FAILD(20006, "商品预热失败！");
+    USER_NOT_EXIST(20008,"用户不存在");
+
 
     /**
      * 商品模块

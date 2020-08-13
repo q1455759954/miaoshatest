@@ -4,6 +4,7 @@ import com.example.miaoshatest.dao.bean.MiaoShaUser;
 import com.example.miaoshatest.entity.ResultStatus;
 import com.example.miaoshatest.exception.UserException;
 import org.springframework.core.MethodParameter;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -11,6 +12,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.Optional;
 
+@Service
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
