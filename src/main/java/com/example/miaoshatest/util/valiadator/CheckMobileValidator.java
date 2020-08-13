@@ -5,6 +5,8 @@ import com.example.miaoshatest.util.PhoneUtil;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class CheckMobileValidator implements ConstraintValidator<CheckMobile, String> {
@@ -19,6 +21,7 @@ public class CheckMobileValidator implements ConstraintValidator<CheckMobile, St
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
+
         Predicate<String> predicate = (String value) -> PhoneUtil.checkPhone(value);
         if (require){
             return predicate.test(s);

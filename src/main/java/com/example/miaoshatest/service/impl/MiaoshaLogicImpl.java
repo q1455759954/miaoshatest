@@ -1,8 +1,10 @@
 package com.example.miaoshatest.service.impl;
 
+import com.alibaba.druid.util.StringUtils;
 import com.example.miaoshatest.dao.bean.MiaoShaUser;
 import com.example.miaoshatest.redis.RedisClient;
 import com.example.miaoshatest.redis.keysbean.MiaoShaUserKey;
+import com.example.miaoshatest.redis.keysbean.MiaoshaKey;
 import com.example.miaoshatest.service.IMiaoShaLogic;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,5 +32,18 @@ public class MiaoshaLogicImpl implements IMiaoShaLogic {
         response.addCookie(cookie);
         return response ;
     }
+
+    @Override
+    public MiaoShaUser getUserByToken(HttpServletResponse response, String t) {
+        if (StringUtils.isEmpty(t)){
+            return null;
+        }
+        MiaoShaUser user = (MiaoShaUser) redisClient.get(MiaoShaUserKey.token,t,MiaoShaUser.class);
+        if (user!=null){
+            addCookie(response,t,user);
+        }
+        return user;
+    }
+
 
 }

@@ -16,7 +16,9 @@ public enum ResultStatus {
     PASSWORD_ERROR(20003,"密码错误!"),
     MOBILE_NOT_EXIST(20004,"用户不存在!"),
     DATA_NOT_EXISTS(20005, "商品不存在!"),
+    USER_NOT_EXIST(20008,"用户不存在"),
     YURE_FAILD(20006, "商品预热失败！");
+
     /**
      * 商品模块
      */

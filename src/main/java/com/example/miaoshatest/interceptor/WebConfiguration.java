@@ -11,8 +11,11 @@ public class WebConfiguration implements WebMvcConfigurer  {
     @Autowired
     AccessInterceptor accessInterceptor;
 
+    @Autowired
+    UserArgumentResolver userArgumentResolver;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(logInterceptor).addPathPatterns("/**");
+        registry.addInterceptor(accessInterceptor);
     }
 }

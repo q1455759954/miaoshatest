@@ -8,4 +8,5 @@ public interface IMiaoShaLogic {
 
     public HttpServletResponse addCookie(HttpServletResponse response, String token, MiaoShaUser user);
 
+    MiaoShaUser getUserByToken(HttpServletResponse response, String t);
 }
