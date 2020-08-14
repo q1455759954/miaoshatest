@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static com.example.miaoshatest.common.CustomerConstant.COOKIE_NAME_TOKEN;
 
@@ -49,6 +51,8 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
             if (userCheckAndLimit==null){
                 return true;
             }
+
+
             int second = userCheckAndLimit.seconds();
             int maxCount = userCheckAndLimit.maxCount();
             boolean flag = userCheckAndLimit.needLogin();
