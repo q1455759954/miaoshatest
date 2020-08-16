@@ -134,7 +134,7 @@ public class RandomValidateCodeService {
         if(StringUtils.isEmpty(codeOld) || !codeOld.equals(verifyCode)){
             return false;
         }
-        redisClient.delete(MiaoshaKey.getMiaoshaVerifyCode, user.getNickname() + "," + goodsId);
+        redisClient.delete(MiaoshaKey.getMiaoshaVerifyCode, user.getNickname() + ":" + goodsId);
         return true;
     }
 }

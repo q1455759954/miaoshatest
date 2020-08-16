@@ -1,6 +1,7 @@
 package com.example.miaoshatest.controller;
 
 import com.alibaba.fastjson.JSON;
+import com.example.miaoshatest.common.CustomerConstant;
 import com.example.miaoshatest.common.ProductSoutOutMap;
 import com.example.miaoshatest.dao.bean.MiaoShaUser;
 import com.example.miaoshatest.entity.*;
@@ -10,10 +11,17 @@ import com.example.miaoshatest.redis.keysbean.MiaoshaKey;
 import com.example.miaoshatest.service.IGoodsService;
 import com.example.miaoshatest.service.IMiaoShaService;
 import com.example.miaoshatest.service.impl.RandomValidateCodeService;
+import com.example.miaoshatest.util.rabbitmq.MQSender;
 import com.example.miaoshatest.util.valiadator.UserCheckAndLimit;
+import com.example.miaoshatest.util.zk.WatcherApi;
+import com.example.miaoshatest.util.zk.ZkApi;
+import com.sun.org.apache.xpath.internal.operations.Or;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.session.RedisSessionProperties;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
@@ -24,10 +32,15 @@ import javax.validation.Valid;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static com.example.miaoshatest.common.CustomerConstant.MiaoShaStatus.MIAO_SHA_NOT_START;
+import static com.example.miaoshatest.common.CustomerConstant.MS_ING;
 import static com.example.miaoshatest.entity.ResultStatus.*;
 
+/**
+ * 1.排队标记没有删除
+ * 2.zk的监听 修改map
+ */
 @Controller
 @RequestMapping("/miaosha")
 @Slf4j
@@ -45,6 +58,15 @@ public class MiaoShaController {
     @Autowired
     IMiaoShaService miaoShaService;
 
+    @Autowired
+    private ZkApi zooKeeper;
+
+    @Autowired
+    MQSender sender;
+
+    @Autowired
+    WatcherApi watcherApi;
+
     @PostConstruct
     public void init() throws Exception {
         ResultGeekQ<List<GoodsVo>> goodsListR = goodsService.goodsVoList();
@@ -59,6 +81,32 @@ public class MiaoShaController {
         }
     }
 
+    @RequestMapping(value = "/result", method = RequestMethod.GET)
+    @ResponseBody
+    public ResultGeekQ<Long> getMiaoshaResult(Model model, MiaoShaUser user,
+                                              @RequestParam("goodsId") long goodsId) {
+        ResultGeekQ result = ResultGeekQ.build();
+        try {
+            String queueKey = MiaoshaKey.getMiaoshaOrderWaitFlagRedisKey(String.valueOf(user.getId()), String.valueOf(goodsId));
+            if (redisService.get(queueKey,String.class)!=null){
+                result.withError(MIAOSHA_QUEUE_ING.getCode(),MIAOSHA_QUEUE_ING.getMessage());
+                return result;
+            }
+            String msKey  = CustomerConstant.RedisKeyPrefix.MIAOSHA_ORDER + "_" + user.getId() + "_" + goodsId;
+            Object order = redisService.get(msKey, OrderInfoVo.class);
+            if (order!=null){
+                OrderInfoVo info = (OrderInfoVo)order;
+                result.setData(info.getId());
+                return result;
+            }
+            result.withErrorCodeAndMessage(ResultStatus.MIAOSHA_FAIL);
+            return result;
+        }catch (Exception e) {
+            result.withErrorCodeAndMessage(ResultStatus.MIAOSHA_FAIL);
+            return result;
+        }
+
+    }
 
     @UserCheckAndLimit(seconds = 5, maxCount = 5, needLogin = true)
     @RequestMapping(value = "/{path}/confirm", method = RequestMethod.POST)
@@ -73,9 +121,11 @@ public class MiaoShaController {
                 result.withError(REQUEST_ILLEGAL.getCode(), REQUEST_ILLEGAL.getMessage());
                 return result;
             }
-
+            if (zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)), watcherApi) != null) {
+                zooKeeper.updateNode(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)), "false");
+            }
             //用zk标记判断是否卖光
-            if (ProductSoutOutMap.getProductSoldOutMap().get(goodsId)!=null){
+            if (ProductSoutOutMap.getProductSoldOutMap().get(goodsId+"")!=null){
                 result.withError(MIAO_SHA_OVER.getCode(), MIAO_SHA_OVER.getMessage());
                 return result;
             }
@@ -95,16 +145,92 @@ public class MiaoShaController {
             }
 
             //是否已经秒杀到了,查找订单
-
+            String msKey  = CustomerConstant.RedisKeyPrefix.MIAOSHA_ORDER + "_" + user.getId() + "_" + goodsId;
+            OrderInfoVo orderInfo = (OrderInfoVo) redisService.get(msKey, OrderInfoVo.class);
+            if (orderInfo!=null){
+                result.withErrorCodeAndMessage(GOOD_EXIST);
+                return result;
+            }
 
             //扣减内存 + zk内存标志
+            ResultGeekQ<Boolean> deductR = deductStockCache(goodsId+"");
+            if (!ResultGeekQ.isSuccess(deductR)){
+                result.withError(deductR.getCode(), deductR.getMessage());
+                return result;
+            }
 
+            //入队
+            MiaoShaMessage mm = new MiaoShaMessage();
+            mm.setUser(user);
+            mm.setGoodsId(goodsId);
+            sender.sendMiaoshaMessage(mm);
+            //正在进行中
+            result.setData(MS_ING);
 
-
+        }catch (AmqpException amqpE){
+            log.error("创建订单失败", amqpE);
+            redisService.incr(GoodsKey.getMiaoshaGoodsStock,""+goodsId);
+            ProductSoutOutMap.getProductSoldOutMap().remove(goodsId);
+            //修改zk
+            if (zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)),true)!=null){
+                zooKeeper.updateNode(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)),"false");
+            }
+            result.withErrorCodeAndMessage(MIAOSHA_MQ_SEND_FAIL);
+            return result ;
         }catch (Exception e){
-
+            result.withErrorCodeAndMessage(MIAOSHA_FAIL);
+            return result;
         }
-        return null;
+        return result;
+    }
+
+    /**
+     * 扣减库存
+     * @param goodsId
+     * @return
+     */
+    private ResultGeekQ<Boolean> deductStockCache(String goodsId) {
+        ResultGeekQ<Boolean> result = ResultGeekQ.build();
+        try {
+            Long stock = redisService.decr(GoodsKey.getMiaoshaGoodsStock,""+goodsId);
+            if (stock == null) {
+                log.error("***数据还未准备好***");
+                result.withError(MIAOSHA_DEDUCT_FAIL.getCode(), MIAOSHA_DEDUCT_FAIL.getMessage());
+                return result;
+            }
+            ConcurrentHashMap hashMap = ProductSoutOutMap.productSoldOutMap;
+
+            if (stock<0){
+                log.info("***stock 扣减减少*** stock:{}",stock);
+                redisService.incr(GoodsKey.getMiaoshaGoodsStock,""+goodsId);
+                ProductSoutOutMap.productSoldOutMap.put(goodsId, true);
+                //写zk售完标志
+                if (zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.PRODUCT_SOLD_OUT, false) == null) {
+                    zooKeeper.createNode(CustomerConstant.ZookeeperPathPrefix.PRODUCT_SOLD_OUT,"");
+                }
+                if (zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId), true) == null) {
+                    zooKeeper.createNode(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId), "true");
+                }
+                if ("false".equals(zooKeeper.getData(CustomerConstant.
+                        ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId),watcherApi))){
+                    zooKeeper.updateNode(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId), "true");
+                    //监听zk售完标记节点
+                    zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(goodsId), true);
+                }
+
+                if (zooKeeper.exists(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)), watcherApi) != null) {
+                    zooKeeper.updateNode(CustomerConstant.ZookeeperPathPrefix.getZKSoldOutProductPath(String.valueOf(goodsId)), "false");
+                }
+
+                result.withError(MIAO_SHA_OVER.getCode(), MIAO_SHA_OVER.getMessage());
+                return result;
+            }
+        }catch (Exception e){
+            log.error("***deductStockCache error***");
+            result.withError(MIAO_SHA_OVER.getCode(), MIAO_SHA_OVER.getMessage());
+            return result;
+        }
+        return result;
     }
 
 

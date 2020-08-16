@@ -13,7 +13,10 @@ public enum ResultStatus {
     REQUEST_ILLEGAL (30004,"请求非法!"),
     MIAO_SHA_OVER(40001,"商品已经秒杀完毕"),
     MIAOSHA_QUEUE_ING (40011,"排队中请耐心等待!"),
-
+    MIAOSHA_DEDUCT_FAIL(40009,"扣减库存失败"),
+    //订单已经存在
+    GOOD_EXIST(50002,"订单已经存在"),
+    MIAOSHA_MQ_SEND_FAIL (40010,"MQ信息发送失败!"),
 
     /**
      * 注册登录

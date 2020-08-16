@@ -14,4 +14,6 @@ public interface IGoodsDao {
     List<GoodsVo> goodsVoList();
 
     GoodsVo goodsVoByGoodsId(Long goodId);
+
+    int reduceStock(Long id);
 }
