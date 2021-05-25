@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.miaoshatest.dao.IDepthDao" >
+
+  <insert id="saveDepth" parameterType="com.example.miaoshatest.dao.bean.Depth">
+       insert into depth (time,content,cost) values (#{time}, #{content}, #{cost})
+    </insert>
+
+    <select id="getDepth" resultType="com.example.miaoshatest.dao.bean.Depth" >
+
+    select  * from depth limit #{num},#{size}
+
+   </select>
+
+</mapper>

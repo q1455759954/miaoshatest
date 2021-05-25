@@ -9,8 +9,10 @@ import com.example.miaoshatest.service.IMiaoShaLogic;
 import com.example.miaoshatest.service.IUserService;
 import com.example.miaoshatest.util.MD5Util;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
@@ -23,6 +25,27 @@ public class UserServiceImpl implements IUserService {
     IUserDao userDao;
     @Autowired
     IMiaoShaLogic mSLogic;
+
+
+    @Transactional
+    public void contextLoads1() {
+        userDao.addUser("bbb");
+        contextLoads2();
+    }
+
+
+    private void contextLoads2() {
+        userDao.addUser("ccc");
+        throw new RuntimeException();
+
+    }
+
+
+    @Transactional
+    public void contextLoads3() {
+        userDao.addUser("ddd");
+    }
+
 
     @Override
     public ResultGeekQ<String> login(HttpServletResponse response, LoginVo loginVo) {

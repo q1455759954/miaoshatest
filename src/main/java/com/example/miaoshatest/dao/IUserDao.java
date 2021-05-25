@@ -10,5 +10,7 @@ public interface IUserDao {
 
     MiaoShaUser getUserByMobile(String mobile);
 
+    void addUser(String name);
+
 
 }

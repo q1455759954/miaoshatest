@@ -20,4 +20,8 @@
     from miaosha_user where nickname = #{nickname,jdbcType=VARCHAR}
   </select>
 
+  <insert id="addUser" parameterType="com.example.miaoshatest.dao.bean.MiaoShaUser" useGeneratedKeys="true">
+    insert into miaosha_user (nickname) values (#{name})
+  </insert>
+
 </mapper>

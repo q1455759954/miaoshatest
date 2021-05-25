@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.miaoshatest.dao.IAmountDao" >
+
+  <insert id="saveAmount" parameterType="com.example.miaoshatest.dao.bean.Amount">
+       insert into amount values (#{id},#{time},#{open},#{close},#{low},#{high},#{amount},#{vol},#{count})
+    </insert>
+
+    <select id="getAmount" resultType="com.example.miaoshatest.dao.bean.Amount" >
+
+    select  * from amount limit #{num},#{size}
+
+   </select>
+
+</mapper>

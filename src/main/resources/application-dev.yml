@@ -28,18 +28,18 @@ spring:
 #        max-active: 8
 #        max-idle: 8
 #        max-wait: -1
-  rabbitmq:
-    host: 127.0.0.1
-    password: guest
-    username: guest
-    listener:
-      simple:
-        retry:
-          enabled: true
-          max-attempts: 3
-          initial-interval: 3000
-        default-requeue-rejected: true
-
+#  rabbitmq:
+#    host: 127.0.0.1
+#    password: guest
+#    username: guest
+#    listener:
+#      simple:
+#        retry:
+#          enabled: true
+#          max-attempts: 3
+#          initial-interval: 3000
+#        default-requeue-rejected: true
+#
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
