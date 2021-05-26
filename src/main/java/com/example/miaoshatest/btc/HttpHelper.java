@@ -30,6 +30,7 @@ public class HttpHelper {
      */
     public static String sendPostRequest(String url ,String json) {
         String result = HttpRequest.post(url)
+                .setHttpProxy("localhost",10809)
                 .header(Header.CONTENT_TYPE, "application/json;charset=UTF-8")
                 .body(json)
                 .execute().body();

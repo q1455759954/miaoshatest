@@ -2,6 +2,7 @@ package com.example.miaoshatest.btc.trade;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -9,29 +10,29 @@ public class Order {
 
     private String contract_code = "BTC-USD";
 
-    private long client_order_id;
+    private Long client_order_id;
 
-    private double price;
+    private Double price;
 
-    private long volume;
+    private Long volume;
 
     private String direction;
 
     private String offset;
 
-    private int lever_rate;
+    private Integer lever_rate;
 
     private String order_price_type;
 
-    private double tp_trigger_price;
+    private Double tp_trigger_price;
 
-    private double tp_order_price;
+    private Double tp_order_price;
 
     private String tp_order_price_type;
 
-    private double sl_trigger_price;
+    private Double sl_trigger_price;
 
-    private double sl_order_price;
+    private Double sl_order_price;
 
     private String sl_order_price_type;
 

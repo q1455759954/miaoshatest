@@ -23,10 +23,16 @@
         <thremf.version>2.1.1.RELEASE</thremf.version>
         <zk.version>4.0.0</zk.version>
         <zk.clientversion>3.4.11</zk.clientversion>
+        <okhttp3.version>4.5.0</okhttp3.version>
         <mq.version>2.1.3.RELEASE</mq.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>${okhttp3.version}</version>
+        </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
