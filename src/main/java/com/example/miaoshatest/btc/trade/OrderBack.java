@@ -18,13 +18,13 @@ public class OrderBack {
 
         private String contract_code;
 
-        private long order_id;
+        private Long order_id;
 
         private String order_id_str;
 
-        private long client_order_id;
+        private Long client_order_id;
 
-        private long ts;
+        private Long ts;
     }
 
 }

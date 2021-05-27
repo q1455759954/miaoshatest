@@ -53,7 +53,7 @@ public class BtcData implements Serializable {
     private long ts;
     private TickBean tick;
 
-    public void getPrice() {
+    public void getPrice() throws Exception {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String url = "https://api.hbdm.com/swap-api/v1/swap_index?contract_code=BTC-USD";
@@ -71,7 +71,7 @@ public class BtcData implements Serializable {
         priceDao.savePrice(price);
     }
 
-    public void getDepth() {
+    public void getDepth() throws Exception {
         StopWatch stopWatch = new StopWatch();
         String time = DateUtil.format((DateUtil.date(Calendar.getInstance())), "yyyy-MM-dd HH:mm:ss");
         stopWatch.start();
@@ -87,7 +87,7 @@ public class BtcData implements Serializable {
         depthDao.saveDepth(depth);
     }
 
-    public void getAmount() {
+    public void getAmount() throws Exception {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         String t = String.valueOf(System.currentTimeMillis() / 1000);

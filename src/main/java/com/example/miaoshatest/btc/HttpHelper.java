@@ -16,7 +16,7 @@ public class HttpHelper {
     /**
      *  发送http get请求
      */
-    public static String sendGetRequest(String url) {
+    public static String sendGetRequest(String url) throws Exception{
         String result = HttpRequest.get(url)
                 .setHttpProxy("localhost",10809)
                 .header(Header.CONTENT_TYPE, "application/json;charset=UTF-8")
