@@ -1,5 +1,6 @@
 package com.example.miaoshatest.btc.trade;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.StopWatch;
 import cn.hutool.json.JSONUtil;
 import com.example.miaoshatest.btc.AmountBean;
@@ -7,9 +8,13 @@ import com.example.miaoshatest.btc.HttpHelper;
 import com.example.miaoshatest.btc.trade.helper.ApiSignature;
 import com.example.miaoshatest.btc.trade.helper.UrlParamsBuilder;
 import com.example.miaoshatest.dao.IAmountDao;
+import com.example.miaoshatest.dao.bean.Amount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,8 +22,8 @@ import java.util.Map;
  */
 @Service
 public class TradeSystem {
-    private String secretKey = "20e51f74-f70e98ec-66928696-5b5de";
-    private String key = "vftwcr5tnh-5d184dc9-439346e2-6060b";
+    private String secretKey = "0e51f74-f70e98ec-66928696-5b5de";
+    private String key = "ftwcr5tnh-5d184dc9-439346e2-6060b";
     private String end = "AccessKeyId="+key+"&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=";
     private static String contract_code = "ETH-USD";
 
@@ -39,11 +44,13 @@ public class TradeSystem {
 
     private int lever_rate = 10;
 
-    public double slRate = 0.993;
+    public double slRate = 0.994;
 
-    public double profitRate = 0.003;
+    public double profitRate = 0.0015;
 
-    public double fixRate = 0.005;
+    public double firstProfitRate = 0.0025;
+
+    public double fixRate = 0.003;
 
     public double curPrice;
 
@@ -65,6 +72,16 @@ public class TradeSystem {
 //            .sl_trigger_price(curPrice * slRate)
 //            .sl_order_price_type("optimal_5")
 //            .build();
+
+    public static void main(String[] args) throws Exception {
+        TradeSystem system = new TradeSystem();
+        system.getTPSL();
+        system.cancelTPSL();
+        system.getTPSL();
+        AmountBean amount = system.getAmount();
+        system.curPrice = amount.getData().get(0).getClose();
+        system.sell();
+    }
 
     public String getResult(String json,String method) {
         int i=0;
@@ -89,16 +106,6 @@ public class TradeSystem {
         map.put("contract_code",contract_code);
         String result = getResult(JSONUtil.toJsonStr(map),ACCOUNT);
         System.out.println(result);
-    }
-
-    public static void main(String[] args) throws Exception {
-        TradeSystem system = new TradeSystem();
-        system.getTPSL();
-        system.cancelTPSL();
-        system.getTPSL();
-        AmountBean amount = system.getAmount();
-        system.curPrice = amount.getData().get(0).getClose();
-        system.buy();
     }
 
     /**
@@ -168,8 +175,9 @@ public class TradeSystem {
      * 设置空方止盈
      */
     public void setLessTP(OrderBack orderBack,String direction) throws InterruptedException {
-        double price = buyPrice - (fixRate + profitRate) * buyPrice  ;
+        double price = buyPrice - (fixRate + firstProfitRate) * buyPrice  ;
         double tpPrice = buyPrice - fixRate * buyPrice  ;
+        double judgePrice = tpPrice;
         //达到止盈点
         boolean flag = false;
         while (true){
@@ -184,12 +192,13 @@ public class TradeSystem {
             if (buyPrice > curPrice){
                 if (curPrice < price){
                     getResult(JSONUtil.toJsonStr(getTPOrder(tpPrice,direction,null)),ORDER_TPSL);
+                    judgePrice = tpPrice;
                     System.out.println("设置空单止盈："+tpPrice);
 //                     HttpHelper.sendPostRequest(ORDER_TPSL+end+gmtNow(), JSONUtil.toJsonStr(getTPOrder(tpPrice,direction,null)));
                     price = price - buyPrice * profitRate;
                     tpPrice = tpPrice - buyPrice * profitRate;
                     flag = true;
-                }else if (curPrice > tpPrice && flag){
+                }else if (curPrice > judgePrice && flag){
                     //闪电平仓
                     lightning(direction);
                     break;
@@ -237,8 +246,9 @@ public class TradeSystem {
      * 设置止盈
      */
     public void setTP(OrderBack orderBack,String direction) throws InterruptedException {
-        double price = (fixRate + profitRate) * buyPrice + buyPrice;
+        double price = (fixRate + firstProfitRate) * buyPrice + buyPrice;
         double tpPrice = fixRate * buyPrice + buyPrice;
+        double judgePrice = tpPrice;
         //达到止盈点
         boolean flag = false;
         while (true){
@@ -253,12 +263,13 @@ public class TradeSystem {
             if (buyPrice < curPrice){
                  if (curPrice > price){
                      getResult(JSONUtil.toJsonStr(getTPOrder(tpPrice,direction,null)),ORDER_TPSL);
+                     judgePrice = tpPrice;
                      System.out.println("设置止盈："+tpPrice);
 //                     HttpHelper.sendPostRequest(ORDER_TPSL+end+gmtNow(), JSONUtil.toJsonStr(getTPOrder(tpPrice,direction,null)));
                      price = price + buyPrice * profitRate;
                      tpPrice = tpPrice + buyPrice * profitRate;
                      flag = true;
-                 }else if (curPrice < tpPrice && flag){
+                 }else if (curPrice < judgePrice && flag){
                      //闪电平仓
                      lightning(direction);
                      break;

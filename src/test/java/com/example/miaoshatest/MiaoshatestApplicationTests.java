@@ -70,7 +70,7 @@ public class MiaoshatestApplicationTests {
     public void tradeSystem() throws InterruptedException {
         system.buyPrice = 40551.0000;
         system.curNum = 1250;
-        system.setTP(null,"sell");
+        system.setLessTP(null,"sell");
     }
 
     @Test
