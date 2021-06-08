@@ -61,8 +61,7 @@ public class MiaoShaController {
     @Autowired
     private ZkApi zooKeeper;
 
-    @Autowired
-    MQSender sender;
+    MQSender sender = null;
 
     @Autowired
     WatcherApi watcherApi;

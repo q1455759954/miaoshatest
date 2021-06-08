@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author 邱润泽 bullock
  */
-@Service
+//@Service
 @Slf4j
 public class RabbitMqServiceImpl {
 

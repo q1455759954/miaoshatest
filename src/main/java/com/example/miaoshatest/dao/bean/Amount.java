@@ -3,9 +3,11 @@ package com.example.miaoshatest.dao.bean;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Getter
+@ToString
 public class Amount {
 
     private int id;

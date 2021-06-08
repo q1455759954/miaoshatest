@@ -15,6 +15,7 @@ import com.example.miaoshatest.dao.bean.Price;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -102,6 +103,29 @@ public class BtcData implements Serializable {
         BeanUtil.copyProperties(bean.getData().get(0), amount);
         amount.setTime(stampToDate(String.valueOf(bean.getTs())));
         amountDao.saveAmount(amount);
+    }
+
+    @Transactional
+    public void getETHAmount() throws Exception {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String t = String.valueOf(System.currentTimeMillis() / 1000);
+        String url = "https://api.hbdm.com/linear-swap-ex/market/history/kline?contract_code=ETH-USDT&period=1min&size=2000";
+        String result = HttpHelper.sendGetRequest(url);
+        stopWatch.stop();
+        if (stopWatch.getTotalTimeMillis()>2500){
+            return;
+        }
+        AmountBean bean = JSONUtil.toBean(result, AmountBean.class);
+        for (int i=0;i<bean.getData().size();i++){
+            AmountBean.DataBean dataBean = bean.getData().get(i);
+            System.out.println(i);
+            Amount amount = new Amount();
+            BeanUtil.copyProperties(dataBean, amount);
+            amount.setTime(stampToDate(String.valueOf(bean.getTs())));
+            System.out.println(amount);
+            amountDao.saveAmount(amount);
+        }
     }
 
     /*

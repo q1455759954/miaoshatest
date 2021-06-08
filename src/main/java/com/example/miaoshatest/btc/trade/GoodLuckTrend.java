@@ -15,10 +15,10 @@ import java.util.List;
 import static com.example.miaoshatest.btc.trade.TradeSystem.*;
 
 @Service
-public class TrendTracking {
+public class GoodLuckTrend {
 
     @Autowired
-    public Test test;
+    public TradeUsdt test;
 
     public UrlParamsBuilder paramsBuilder = null;
 
@@ -41,10 +41,12 @@ public class TrendTracking {
     public void analysisData() throws Exception {
         AmountBean amount = test.getAmount();
         double price = amount.getData().get(0).getClose();
+        System.out.println("现在价格："+price);
         prePrice = price;
         while (true){
             amount = test.getAmount();
             price = amount.getData().get(0).getClose();
+            System.out.println("现在价格："+price);
             if (flag && price > prePrice + div){
                 //上涨
                 prePrice = price;
@@ -69,6 +71,10 @@ public class TrendTracking {
                 }
             }
             findResult(price);
+            if (test.fuckNum>=2){
+                return;
+            }
+            Thread.sleep(1000);
         }
     }
 
@@ -90,7 +96,7 @@ public class TrendTracking {
             if ((curMaxPrice - curMinPrice)/curMinPrice > 0.02){
                 //触发
                 if (max > min){
-                   //买多
+                    //买多
                     System.out.println("触发多单买入，价格："+price);
                     test.curPrice=price;
                     test.buyPrice=price;

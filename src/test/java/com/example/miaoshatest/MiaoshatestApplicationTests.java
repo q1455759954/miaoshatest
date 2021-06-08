@@ -1,7 +1,9 @@
 package com.example.miaoshatest;
 
 import com.example.miaoshatest.btc.BtcData;
+import com.example.miaoshatest.btc.trade.GoodLuckTrend;
 import com.example.miaoshatest.btc.trade.TradeSystem;
+import com.example.miaoshatest.btc.trade.TrendTracking;
 import com.example.miaoshatest.dao.IUserDao;
 import com.example.miaoshatest.service.impl.UserServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +38,57 @@ public class MiaoshatestApplicationTests {
     @Autowired
     private BtcData btcData;
 
+    @Autowired
+    private TrendTracking trendTracking;
+
+    @Autowired
+    private GoodLuckTrend goodLuckTrend;
+
     ExecutorService service = Executors.newFixedThreadPool(5);
 
     @Test
-    public void btcData() {
-        btcData.analysisAmount();
+    public void btcData() throws Exception {
+//        while (true){
+            try {
+                goodLuckTrend.analysisData();
+//                btcData.getETHAmount();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+//        }
+//        while (true){
+//            try {
+//                service.execute(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        btcData.getAmount();
+//
+////                        btcData.getPrice();
+//                    }
+//                });
+////                service.execute(new Runnable() {
+////                    @Override
+////                    public void run() {
+////                        btcData.getDepth();
+////                    }
+////                });
+//                sleep(3*1000);
+//            }catch (Exception e){
+//
+//            }
+//        }
+    }
+
+    @Test
+    public void btcData2() throws Exception {
+        while (true){
+            try {
+                trendTracking.analysisData();
+//                btcData.getETHAmount();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 //        while (true){
 //            try {
 //                service.execute(new Runnable() {
